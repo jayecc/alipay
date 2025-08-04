@@ -109,3 +109,33 @@ func (this *Client) TradeAppMergePay(param TradeAppPay) (result string, err erro
 	}
 	return p.Encode(), err
 }
+
+// TradeSettleConfirm 统一收单确认结算接口 https://opendocs.alipay.com/solution/5cd4703e_alipay.trade.settle.confirm?referPath=0depc8_fc329633
+func (this *Client) TradeSettleConfirm(param TradeSettleConfirm) (result *TradeSettleConfirmRsp, err error) {
+	err = this.doRequest("POST", param, &result)
+	return result, err
+}
+
+// TradeRoyaltyRelationBind 分账关系绑定 https://opendocs.alipay.com/solution/88d0ebf4_alipay.trade.royalty.relation.bind?referPath=0denvh_e57d7a6d
+func (this *Client) TradeRoyaltyRelationBind(param TradeRoyaltyRelationBind) (result *TradeRoyaltyRelationBindRsp, err error) {
+	err = this.doRequest("POST", param, &result)
+	return result, err
+}
+
+// TradeRoyaltyRelationUnbind 分账关系解绑 https://opendocs.alipay.com/solution/06c7b226_alipay.trade.royalty.relation.unbind?scene=common&pathHash=b2eba9b7
+func (this *Client) TradeRoyaltyRelationUnbind(param TradeRoyaltyRelationUnbind) (result *TradeRoyaltyRelationUnbindRsp, err error) {
+	err = this.doRequest("POST", param, &result)
+	return result, err
+}
+
+// TradeRoyaltyRelationBatchQuery 分账关系查询 https://opendocs.alipay.com/solution/a5033600_alipay.trade.royalty.relation.batchquery?scene=common&pathHash=a30d0d23
+func (this *Client) TradeRoyaltyRelationBatchQuery(param TradeRoyaltyRelationBatchQuery) (result *TradeRoyaltyRelationBatchQueryRsp, err error) {
+	err = this.doRequest("POST", param, &result)
+	return result, err
+}
+
+// TradeOrderSettleQuery 交易分账查询接口 https://opendocs.alipay.com/solution/aeb3e674_alipay.trade.order.settle.query?pathHash=7cf32685
+func (this *Client) TradeOrderSettleQuery(param TradeOrderSettleQuery) (result *TradeOrderSettleQueryRsp, err error) {
+	err = this.doRequest("POST", param, &result)
+	return result, err
+}

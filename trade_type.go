@@ -389,6 +389,15 @@ type TradeOrderSettle struct {
 	TradeNo           string              `json:"trade_no"`           // 必须 支付宝订单号
 	RoyaltyParameters []*RoyaltyParameter `json:"royalty_parameters"` // 必须 分账明细信息
 	OperatorId        string              `json:"operator_id"`        //可选 操作员id
+	// extend_params可选SettleExtendParams
+	//【描述】分账结算业务扩展参数
+	ExtendParams *SettleExtendParams `json:"extend_params,omitempty"`
+	// royalty_mode可选string(32)
+	//【描述】分账模式，目前有两种分账同步执行sync，分账异步执行async，不传默认同步执行
+	//【枚举值】
+	//同步执行: sync
+	//异步执行: async
+	RoyaltyMode string `json:"royalty_mode,omitempty"`
 }
 
 func (this TradeOrderSettle) APIName() string {
@@ -402,11 +411,47 @@ func (this TradeOrderSettle) Params() map[string]string {
 }
 
 type RoyaltyParameter struct {
-	TransOut         string  `json:"trans_out"`                   // 可选 分账支出方账户，类型为userId，本参数为要分账的支付宝账号对应的支付宝唯一用户号。以2088开头的纯16位数字。
-	TransIn          string  `json:"trans_in"`                    // 可选 分账收入方账户，类型为userId，本参数为要分账的支付宝账号对应的支付宝唯一用户号。以2088开头的纯16位数字。
-	Amount           float64 `json:"amount"`                      // 可选 分账的金额，单位为元
-	AmountPercentage float64 `json:"amount_percentage,omitempty"` // 可选 分账信息中分账百分比。取值范围为大于0，少于或等于100的整数。
-	Desc             string  `json:"desc"`                        // 可选 分账描述
+	//amount特殊可选price(15)
+	//【描述】分账的金额，单位为元
+	//【必选条件】当没传amount_percentage时，amount必选传
+	Amount string `json:"amount,omitempty"`
+	// royalty_type可选string(32)
+	//【描述】分账类型.
+	//【枚举值】
+	//分账: transfer
+	//营销补差: replenish
+	//【注意事项】为空默认为分账transfer;
+	RoyaltyType string `json:"royalty_type,omitempty"`
+	// trans_out可选string(16)
+	//【描述】支出方账户。如果支出方账户类型为userId，本参数为支出方的支付宝账号对应的支付宝唯一用户号，以2088开头的纯16位数字；如果支出方类型为loginName，本参数为支出方的支付宝登录号。 泛金融类商户分账时，该字段不要上送。
+	TransOut string `json:"trans_out,omitempty"`
+	// trans_in_type可选string(64)
+	//【描述】收入方账户类型。
+	//【枚举值】
+	//支付宝账号对应的支付宝唯一用户号: userId
+	//支付宝登录号: loginName
+	//卡编号: cardAliasNo
+	//支付宝openId: openId
+	TransInType string `json:"trans_in_type,omitempty"`
+	// trans_out_type可选string(64)
+	//【描述】支出方账户类型。
+	//【枚举值】
+	//支付宝账号对应的支付宝唯一用户号: userId
+	//支付宝登录号: loginName
+	//【注意事项】泛金融类商户分账时，该字段不要上送。
+	TransOutType string `json:"trans_out_type,omitempty"`
+	// trans_in可选string(16)
+	//【描述】收入方账户。如果收入方账户类型为userId，本参数为收入方的支付宝账号对应的支付宝唯一用户号，以2088开头的纯16位数字；如果收入方类型为cardAliasNo，本参数为收入方在支付宝绑定的卡编号；如果收入方类型为loginName，本参数为收入方的支付宝登录号；如果收入方类型为openId，本参数为收入方的支付宝openId信息
+	TransIn string `json:"trans_in,omitempty"`
+	// desc可选string(1000)
+	//【描述】分账描述
+	Desc string `json:"desc,omitempty"`
+	// royalty_scene可选string(256)
+	//【描述】可选值：达人佣金、平台服务费、技术服务费、其他
+	RoyaltyScene string `json:"royalty_scene,omitempty"`
+	// trans_in_name可选string(64)
+	//【描述】分账收款方姓名，上送则进行姓名与支付宝账号的一致性校验，校验不一致则分账失败。不上送则不进行姓名校验
+	TransInName string `json:"trans_in_name,omitempty"`
 }
 
 // TradeOrderSettleRsp 统一收单交易结算接口响应参数
@@ -728,4 +773,288 @@ func (this TradeAppMergePay) Params() map[string]string {
 	var m = make(map[string]string)
 	m["app_auth_token"] = this.AppAuthToken
 	return m
+}
+
+type SettleConfirmExtendParams struct {
+	// royalty_freeze可选string(16)
+	//【描述】是否进行资金冻结，用于后续分账，true表示冻结，false或不传表示不冻结
+	RoyaltyFreeze string `json:"royalty_freeze,omitempty"`
+}
+
+type TradeSettleConfirm struct {
+	AppAuthToken string `json:"-"` // 可选
+	// out_request_no必选string(64)
+	//【描述】确认结算请求流水号，开发者自行生成并保证唯一性，作为业务幂等性控制
+	OutRequestNo string `json:"out_request_no,omitempty"`
+	// trade_no必选string(36)
+	//【描述】支付宝交易号
+	TradeNo string `json:"trade_no,omitempty"`
+	// settle_info必选SettleInfo
+	//【描述】描述结算信息，json格式。
+	SettleInfo *SettleInfo `json:"settle_info,omitempty"`
+	// extend_params可选SettleConfirmExtendParams
+	//【描述】扩展字段信息
+	ExtendParams *SettleConfirmExtendParams `json:"extend_params,omitempty"`
+}
+
+func (t TradeSettleConfirm) APIName() string {
+	return "alipay.trade.settle.confirm"
+}
+
+func (t TradeSettleConfirm) Params() map[string]string {
+	var m = make(map[string]string)
+	m["app_auth_token"] = t.AppAuthToken
+	return m
+}
+
+type TradeSettleConfirmRsp struct {
+	Error
+	// trade_no可选string(64)
+	//【描述】支付宝交易号
+	//【示例值】2015070921001004130000127421
+	TradeNo string `json:"trade_no,omitempty"`
+	// out_request_no可选string(64)
+	//【描述】确认结算请求流水号，开发者自行生成并保证唯一性，作为业务幂等性控制
+	OutRequestNo string `json:"out_request_no,omitempty"`
+	// settle_amount可选price(9)
+	//【描述】本次确认结算的实际结算金额，单位为元。
+	SettleAmount string `json:"settle_amount,omitempty"`
+}
+
+type RoyaltyEntity struct {
+	// name特殊可选string(256)
+	//【描述】分账接收方真实姓名。 绑定分账关系时： 当分账方类型是userId时，本参数可以不传，若上传则进行校验不上传不会校验。 当分账方类型是loginName时，本参数必传。 解绑分账关系时：作为请求参数可不填，分账关系查询时不作为返回结果返回
+	Name string `json:"name,omitempty"`
+	// type｜分账接收方类型可选string(32)
+	//【描述】分账接收方类型。
+	//【枚举值】
+	//支付宝账号对应的支付宝唯一用户号: userId
+	//支付宝登录号: loginName
+	//支付宝openId: openId
+	Type string `json:"type,omitempty"`
+	// account可选string(32)
+	//【描述】分账接收方账号。 当分账方类型是userId时，本参数为用户的支付宝账号对应的支付宝唯一用户号，以2088开头的纯16位数字； 当分账方类型是loginName时，本参数为用户的支付宝登录号；当分账方类型是openId时，本参数传递支付宝openId信息。
+	Account string `json:"account,omitempty"`
+	// account_open_id｜分账方 openId可选string(128)
+	//【描述】分账接收方openId，本参数为分账接收方在该应用（AppId）下的唯一用户标识，仅用于分账关系查询接口出参。
+	AccountOpenId string `json:"account_open_id,omitempty"`
+	// memo可选string(256)
+	//【描述】分账关系描述
+	Memo string `json:"memo,omitempty"`
+	// login_name可选string(150)
+	//【描述】作为查询返回结果：当前userId对应的支付宝登录号。当login_name与bind_login_name不相等时，表明该支付宝账户发生了登录号变更。
+	LoginName string `json:"login_name,omitempty"`
+	// bind_login_name可选string(150)
+	//【描述】作为查询返回结果：分账收款方绑定时的支付宝登录号。分账关系绑定（alipay.trade.royalty.relation.bind）时，通过type为loginName绑定传入的支付宝登录号，若使用userId绑定则不返回。
+	ReceiverLoginName string `json:"receiver_login_name,omitempty"`
+}
+type TradeRoyaltyRelationBind struct {
+	AppAuthToken string `json:"-"` // 可选
+	// receiver_list必选RoyaltyEntity[]
+	//【描述】分账接收方列表，单次传入最多20个
+	ReceiverList []*RoyaltyEntity `json:"receiver_list,omitempty"`
+	// out_request_no必选string(32)
+	//【描述】外部请求号，由商家自定义。32个字符以内，仅可包含字母、数字、下划线。需保证在商户端不重复。
+	OutRequestNo string `json:"out_request_no,omitempty"`
+}
+
+func (t TradeRoyaltyRelationBind) APIName() string {
+	return "alipay.trade.royalty.relation.bind"
+}
+
+func (t TradeRoyaltyRelationBind) Params() map[string]string {
+	var m = make(map[string]string)
+	m["app_auth_token"] = t.AppAuthToken
+	return m
+}
+
+type TradeRoyaltyRelationBindRsp struct {
+	Error
+	// result_code必选string(16)
+	//【描述】SUCCESS：分账关系绑定成功； FAIL：分账关系绑定失败。
+	//【枚举值】
+	//分账关系绑定成功: SUCCESS
+	//分账关系绑定失败: FAIL
+	ResultCode TradeStatus `json:"result_code"`
+}
+
+type TradeRoyaltyRelationUnbind struct {
+	AppAuthToken string `json:"-"`
+	// receiver_list必选RoyaltyEntity[]
+	//【描述】分账接收方列表，单次传入最多 20 个信息。
+	ReceiverList []*RoyaltyEntity `json:"receiver_list"`
+	// out_request_no必选string(32)
+	//【描述】外部请求号，由商家自定义。32个字符以内，仅可包含字母、数字、下划线。需保证在商户端不重复
+	OutRequestNo string `json:"out_request_no"`
+}
+
+func (t TradeRoyaltyRelationUnbind) APIName() string {
+	return "alipay.trade.royalty.relation.unbind"
+}
+
+func (t TradeRoyaltyRelationUnbind) Params() map[string]string {
+	var m = make(map[string]string)
+	m["app_auth_token"] = t.AppAuthToken
+	return m
+}
+
+type TradeRoyaltyRelationUnbindRsp struct {
+	Error
+	// result_code必选string(16)
+	//【描述】业务结果码。SUCCESS：分账关系解绑成功； FAIL：分账关系解绑失败。
+	ResultCode TradeStatus `json:"result_code"`
+}
+
+type TradeRoyaltyRelationBatchQuery struct {
+	AppAuthToken string `json:"-"`
+	// page_num可选number(4)
+	//【描述】几页，起始页为 1。不填默认为 1。
+	PageNum int `json:"page_num,omitempty"`
+	// page_size可选number(4)
+	//【描述】页面大小。每页记录数，取值范围是(0,100]。不填默认为20
+	PageSize int `json:"page_size,omitempty"`
+	// out_request_no｜请求号可选string(64)
+	//【描述】外部请求号，由商家自定义。32个字符以内，仅可包含字母、数字、下划线。需保证在商户端不重复。
+	OutRequestNo string `json:"out_request_no,omitempty"`
+}
+
+func (t TradeRoyaltyRelationBatchQuery) APIName() string {
+	return "alipay.trade.royalty.relation.batchquery"
+}
+
+func (t TradeRoyaltyRelationBatchQuery) Params() map[string]string {
+	var m = make(map[string]string)
+	m["app_auth_token"] = t.AppAuthToken
+	return m
+}
+
+type TradeRoyaltyRelationBatchQueryRsp struct {
+	Error
+	// result_code必选string(16)
+	//【描述】业务结果码。SUCCESS：分账关系查询成功；FAIL：分账关系查询失败。
+	//【枚举值】
+	//分账关系查询成功: SUCCESS
+	//分账关系查询失败: FAIL
+	ResultCode string `json:"result_code"`
+	// total_page_num必选number(4)
+	//【描述】总页数
+	TotalPageNum int `json:"total_page_num"`
+	// total_record_num必选number(8)
+	//【描述】分账关系记录总数
+	TotalRecordNum int `json:"total_record_num"`
+	// current_page_num必选number(4)
+	//【描述】当前页数
+	CurrentPageNum int `json:"current_page_num"`
+	// current_page_size必选number(4)
+	//【描述】当前页面大小
+	CurrentPageSize int `json:"current_page_size"`
+	// receiver_list可选RoyaltyEntity[]
+	//【描述】分账收款方列表
+	ReceiverList []*RoyaltyEntity `json:"receiver_list"`
+}
+
+type SettleExtendParams struct {
+	// royalty_finish可选string(64)
+	//【描述】"冻结分账场景下生效，其他场景传入无效。代表该交易分账是否完结，可选值：true/false，不传默认为false。true：代表分账完结，则本次分账处理完成后会把该笔交易的剩余冻结金额全额解冻。false：代表分账未完结。"
+	RoyaltyFinish string `json:"royalty_finish,omitempty"`
+}
+
+type TradeOrderSettleQuery struct {
+	AppAuthToken string `json:"-"`
+	// settle_no特殊可选string[0,128]
+	//【描述】支付宝分账请求单号，传入该字段，无需再传外部请求号和支付宝交易号
+	//【必选条件】支付宝分账请求单号，传入该字段，无需再传外部请求号和支付宝交易号
+	SettleNo string `json:"settle_no,omitempty"`
+	// out_request_no特殊可选string[0,128]
+	//【描述】调用分账接口时指定的外部请求号。分账查询时需要和支付宝交易号一起传入
+	//【必选条件】调用分账接口时指定的外部请求号。分账查询时需要和支付宝交易号一起传入
+	OutRequestNo string `json:"out_request_no,omitempty"`
+	// trade_no特殊可选string[0,128]
+	//【描述】支付宝交易号，传入该字段，需要和外部请求号一起传入
+	//【必选条件】支付宝交易号，传入该字段，需要和外部请求号一起传入
+	TradeNo string `json:"trade_no,omitempty"`
+}
+
+func (t TradeOrderSettleQuery) APIName() string {
+	return "alipay.trade.order.settle.query"
+}
+
+func (t TradeOrderSettleQuery) Params() map[string]string {
+	var m = make(map[string]string)
+	m["app_auth_token"] = t.AppAuthToken
+	return m
+}
+
+type TradeOrderSettleQueryRsp struct {
+	Error
+	// out_request_no必选string(64)
+	//【描述】商户分账请求单号
+	OutRequestNo string `json:"out_request_no"`
+	// operation_dt必选date(32)
+	//【描述】分账受理时间
+	OperationDt string `json:"operation_dt"`
+	// royalty_detail_list可选RoyaltyDetail[]
+	//【描述】分账明细
+	RoyaltyDetailList []*RoyaltyDetail `json:"royalty_detail_list"`
+}
+
+type RoyaltyDetail struct {
+	// operation_type必选string(16)
+	//【描述】分账操作类型。有以下几种类型： replenish(补差)、replenish_refund(退补差)、transfer(分账)、transfer_refund(退分账)
+	//【枚举值】
+	//分账: transfer
+	//退分账: transfer_refund
+	//补差: replenish
+	//退补差: replenish_refund
+	OperationType string `json:"operation_type"`
+	// amount必选price(11)
+	//【描述】分账金额
+	Amount string `json:"amount"`
+	// state必选string(32)
+	//【描述】分账状态，SUCCESS成功，FAIL失败，PROCESSING处理中
+	//【枚举值】
+	//处理中: PROCESSING
+	//失败: FAIL
+	//成功: SUCCESS
+	State string `json:"state"`
+	// execute_dt特殊可选date(32)
+	//【描述】分账执行时间
+	ExecuteDt string `json:"execute_dt"`
+	// trans_out特殊可选string(64)
+	//【描述】分账转出账号，只有在operation_type为replenish(补差),transfer_refund(退分账)类型才返回该字段或trans_out_open_id字段。trans_out_open_id字段为分账转出方的openId，当trans_out_open_id 字段不为空时，请优先使用trans_out_open_id
+	TransOut string `json:"trans_out"`
+	// trans_out_type｜分账转出账号类型特殊可选string(32)
+	//【描述】分账转出账号类型
+	//【枚举值】
+	//支付宝账号对应的支付宝唯一用户号: userId
+	//支付宝登录号: loginName
+	//二级商户id: secondMerchantID
+	//【注意事项】只有在operation_type为replenish(补差)，transfer_refund(退分账)类型才返回该字段
+	TransOutType string `json:"trans_out_type,omitempty"`
+	// trans_out_open_id｜分账转出方openId特殊可选string(128)
+	//【描述】分账转出方的OpenId，OpenId为用户在该应用下支付宝内的唯一用户标识。
+	TransOutOpenId string `json:"trans_out_open_id,omitempty"`
+	// trans_in特殊可选string(64)
+	//【描述】分账转入账号，只有在operation_type为replenish_refund(退补差)，transfer(分账)才返回该字段或trans_in_open_id。trans_in_open_id为分账转入方的openId，当trans_in_open_id不为空的时候，请优先使用trans_in_open_id。
+	TransIn string `json:"trans_in,omitempty"`
+	// trans_in_open_id｜分账转入方openId特殊可选string(128)
+	//【描述】分账转入方的OpenId，OpenId为用户在该应用下支付宝的唯一用户标识。
+	TransInOpenId string `json:"trans_in_open_id,omitempty"`
+	// trans_in_type｜分账转入账号类型特殊可选string(32)
+	//【描述】分账转入账号类型。
+	//【枚举值】
+	//支付宝账号对应的支付宝唯一用户号: userId
+	//支付宝登录号: loginName
+	//二级商户id: secondMerchantID
+	//【注意事项】只有在operation_type为replenish_refund(退补差)，transfer(分账)才返回该字段
+	TransInType string `json:"trans_in_type,omitempty"`
+	// detail_id｜分账明细单号可选string(128)
+	//【描述】支付宝分账明细单号，每笔分账业务执行的明细单号
+	DetailId string `json:"detail_id,omitempty"`
+	// error_code可选string(64)
+	//【描述】分账失败错误码，只在分账失败时返回
+	ErrorCode string `json:"error_code,omitempty"`
+	// error_desc可选string(128)
+	//【描述】分账错误描述信息
+	ErrorDesc string `json:"error_desc,omitempty"`
 }

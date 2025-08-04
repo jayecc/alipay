@@ -1,6 +1,7 @@
 package alipay
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -115,4 +116,38 @@ func AckNotification(w http.ResponseWriter) {
 func ACKNotification(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(kSuccess)
+}
+
+// GetMerchantReviewNotification 商户审核通知
+// https://opendocs.alipay.com/pre-apis/msgapi_pre/ant.merchant.expand.indirect.zft.passed
+// https://opendocs.alipay.com/pre-apis/msgapi_pre/ant.merchant.expand.indirect.zft.rejected
+func (this *Client) GetMerchantReviewNotification(req *http.Request) (notification *MerchantReviewNotification, err error) {
+	if req == nil {
+		return nil, errors.New("request 参数不能为空")
+	}
+	if err = req.ParseForm(); err != nil {
+		return nil, err
+	}
+	notification = &MerchantReviewNotification{}
+	notification.AppId = req.FormValue("app_id")
+	notification.NotifyId = req.FormValue("notify_id")
+	notification.UtcTimestamp = req.FormValue("utc_timestamp")
+	notification.MsgMethod = req.FormValue("msg_method")
+	notification.MsgType = req.FormValue("msg_type")
+	notification.MsgUid = req.FormValue("msg_uid")
+	notification.MsgAppId = req.FormValue("msg_app_id")
+	if req.FormValue("biz_content") != "" {
+		var bizContent MerchantBizContent
+		err = json.Unmarshal([]byte(req.FormValue("biz_content")), &bizContent)
+		if err != nil {
+			return nil, err
+		}
+		notification.BizContent = bizContent
+	}
+	notification.EncryptType = req.FormValue("encrypt_type")
+	notification.Charset = req.FormValue("charset")
+	notification.Version = req.FormValue("version")
+	notification.SignType = req.FormValue("sign_type")
+	notification.Sign = req.FormValue("sign")
+	return notification, this.VerifySign(req.Form)
 }
