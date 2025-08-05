@@ -256,8 +256,6 @@ type SecondaryMerchantSimpleCreate struct {
 	// alias_name必选string(512)
 	//【描述】商户别名。支付宝收银台及账单中的商户名称会展示此处设置的别名。如果涉及支付宝APP内的支付，支付结果页也会展示该别名；如果涉及线下当面付场景，请填写线下店铺名称
 	AliasName string `json:"alias_name,omitempty"`
-	// 商家类型。06：个人商户。
-	MerchantType string `json:"merchant_type"`
 	// contact_infos必选ContactInfo
 	//【描述】商户联系人信息。在本业务中，ContactInfo对象中联系人姓名、手机号必填，其他选填
 	ContactInfos *ContactInfo `json:"contact_infos,omitempty"`
