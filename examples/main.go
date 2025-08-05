@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/smartwalle/alipay/v3"
+	"github.com/jayecc/alipay/v3"
 	"github.com/smartwalle/xid"
 	"log"
 	"net/http"

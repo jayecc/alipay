@@ -3,7 +3,7 @@ package alipay_test
 import (
 	"testing"
 
-	"github.com/smartwalle/alipay/v3"
+	"github.com/jayecc/alipay/v3"
 )
 
 func TestClient_UserCertifyOpenInitialize(t *testing.T) {

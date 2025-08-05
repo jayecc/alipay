@@ -1,9 +1,8 @@
 package alipay_test
 
 import (
+	"github.com/jayecc/alipay/v3"
 	"testing"
-
-	"github.com/smartwalle/alipay/v3"
 )
 
 func TestClient_PublicAppAuthorize(t *testing.T) {
