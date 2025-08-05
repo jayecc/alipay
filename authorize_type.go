@@ -44,6 +44,9 @@ type SystemOauthTokenRsp struct {
 	RefreshToken string `json:"refresh_token"`
 	ReExpiresIn  int64  `json:"re_expires_in"`
 	AuthStart    string `json:"auth_start"`
+	// open_id｜支付宝用户唯一标识string(128)
+	//【描述】支付宝用户唯一标识  详情可查看 https://opendocs.alipay.com/mini/0ai2i6?pathHash=13dd5946
+	OpenId string `json:"open_id"`
 }
 
 // UserInfoShare 支付宝会员授权信息查询接口请求参数 https://docs.open.alipay.com/api_2/alipay.user.info.share
@@ -77,6 +80,9 @@ type UserInfoShareRsp struct {
 	UserStatus         string `json:"user_status"`
 	IsCertified        string `json:"is_certified"`
 	Gender             string `json:"gender"`
+	// open_id｜支付宝用户的openIdstring(128)
+	//【描述】支付宝用户的openId。  详情可查看 https://opendocs.alipay.com/mini/0ai2i6?pathHash=13dd5946
+	OpenId string `json:"open_id"`
 }
 
 // OpenAuthTokenApp 换取应用授权令牌请求参数 https://docs.open.alipay.com/api_9/alipay.open.auth.token.app
